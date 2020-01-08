@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shixun.mapper.EmpRemoveMapper">
+    <insert id="addEmpRemove" parameterType="com.shixun.bean.EmpRemove">
+        insert into employeeremove(eid, sourceDepId, sourceJobId, sourcePosId,
+        targetDepId, targetJobId, targetPosId, removeDate, remark)
+        values(#{eid}, #{sourceDepId}, #{sourceJobId}, #{sourcePosId},
+        #{targetDepId}, #{targetJobId}, #{targetPosId}, #{removeDate}, #{remark})
+    </insert>
+
+    <select id="getEmpRemoveCount" resultType="Long">
+        select count(*) from employeeremove r LEFT JOIN employee e on r.eid = e.id
+        where e.name like concat('%',#{keywords},'%')
+        <if test="sourceDepId!=null">
+            and r.sourceDepId = #{sourceDepId}
+        </if>
+        <if test="sourcePosId!=null">
+            and r.sourcePosId = #{sourcePosId}
+        </if>
+        <if test="sourceJobId!=null">
+            and r.sourceJobId = #{sourceJobId}
+        </if>
+        <if test="targetDepId!=null">
+            and r.targetDepId = #{targetDepId}
+        </if>
+        <if test="targetPosId!=null">
+            and r.targetPosId = #{targetPosId}
+        </if>
+        <if test="targetJobId!=null">
+            and r.targetJobId = #{targetJobId}
+        </if>
+    </select>
+
+    <select id="getEmpRemoveByPage" resultType="com.shixun.bean.EmpRemove">
+        select r.id, r.eid, e.workID, e.name as ename, r.sourceDepId, r.sourceJobId,
+        r.sourcePosId, r.targetDepId, r.targetJobId, r.targetPosId, r.removeDate, r.remark
+        from employeeremove r LEFT JOIN employee e on r.eid = e.id
+        where e.name like concat('%',#{keywords},'%')
+        <if test="sourceDepId!=null">
+            and r.sourceDepId = #{sourceDepId}
+        </if>
+        <if test="sourcePosId!=null">
+            and r.sourcePosId = #{sourcePosId}
+        </if>
+        <if test="sourceJobId!=null">
+            and r.sourceJobId = #{sourceJobId}
+        </if>
+        <if test="targetDepId!=null">
+            and r.targetDepId = #{targetDepId}
+        </if>
+        <if test="targetPosId!=null">
+            and r.targetPosId = #{targetPosId}
+        </if>
+        <if test="targetJobId!=null">
+            and r.targetJobId = #{targetJobId}
+        </if>
+        <if test="start!=null and size!=null">
+            order by r.removeDate desc limit #{start},#{size}
+        </if>
+    </select>
+
+    <select id="getDistinctEmpRemoveCount" resultType="Long">
+        select count(DISTINCT eid) from employeeremove
+    </select>
+
+    <select id="getDismissionCount" resultType="Long">
+        select count(*) from employeeremove where targetDepId = (select id from department where name = '离职')
+    </select>
+</mapper>

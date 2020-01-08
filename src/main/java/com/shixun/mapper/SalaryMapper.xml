@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shixun.mapper.SalaryMapper">
+    <insert id="addSalary" parameterType="com.shixun.bean.Salary">
+        insert into salary (name, bonus, lunchSalary,trafficSalary, basicSalary,
+        allSalary,pensionBase, pensionPer, medicalBase, medicalPer,
+        accumulationFundBase, accumulationFundPer, createDate)
+    values (#{salary.name,jdbcType=VARCHAR}, #{salary.bonus,jdbcType=FLOAT},
+    #{salary.lunchSalary,jdbcType=FLOAT}, #{salary.trafficSalary,jdbcType=FLOAT},
+    #{salary.basicSalary,jdbcType=FLOAT}, #{salary.allSalary,jdbcType=FLOAT},
+    #{salary.pensionBase,jdbcType=FLOAT}, #{salary.pensionPer,jdbcType=FLOAT},
+    #{salary.medicalBase,jdbcType=FLOAT}, #{salary.medicalPer,jdbcType=FLOAT},
+    #{salary.accumulationFundBase,jdbcType=FLOAT}, #{salary.accumulationFundPer,jdbcType=FLOAT},
+    #{salary.createDate,jdbcType=TIMESTAMP})
+    </insert>
+    <select id="getAllSalary" resultType="com.shixun.bean.Salary">
+        SELECT * FROM salary;
+    </select>
+    <update id="updateSalary" parameterType="com.shixun.bean.Salary">
+        update salary
+        <set>
+            <if test="salary.bonus != null">
+                bonus = #{salary.bonus,jdbcType=FLOAT},
+            </if>
+            <if test="salary.lunchSalary != null">
+                lunchSalary = #{salary.lunchSalary,jdbcType=FLOAT},
+            </if>
+            <if test="salary.trafficSalary != null">
+                trafficSalary = #{salary.trafficSalary,jdbcType=FLOAT},
+            </if>
+            <if test="salary.basicSalary != null">
+                basicSalary = #{salary.basicSalary,jdbcType=FLOAT},
+            </if>
+            <if test="salary.allSalary != null">
+                allSalary = #{salary.allSalary,jdbcType=FLOAT},
+            </if>
+            <if test="salary.pensionBase != null">
+                pensionBase = #{salary.pensionBase,jdbcType=FLOAT},
+            </if>
+            <if test="salary.pensionPer != null">
+                pensionPer = #{salary.pensionPer,jdbcType=FLOAT},
+            </if>
+            <if test="salary.createDate != null">
+                createDate = #{salary.createDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="salary.medicalBase != null">
+                medicalBase = #{salary.medicalBase,jdbcType=FLOAT},
+            </if>
+            <if test="salary.medicalPer != null">
+                medicalPer = #{salary.medicalPer,jdbcType=FLOAT},
+            </if>
+            <if test="salary.accumulationFundBase != null">
+                accumulationFundBase = #{salary.accumulationFundBase,jdbcType=FLOAT},
+            </if>
+            <if test="salary.accumulationFundPer != null">
+                accumulationFundPer = #{salary.accumulationFundPer,jdbcType=FLOAT},
+            </if>
+            <if test="salary.name != null">
+                name = #{salary.name,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{salary.id,jdbcType=INTEGER}
+    </update>
+    <delete id="deleteSalary">
+        DELETE FROM salary WHERE id IN
+        <foreach collection="ids" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="deleteSalaryByEid">
+        DELETE FROM empsalary WHERE eid=#{eid}
+    </delete>
+    <insert id="addSidAndEid">
+        INSERT INTO empsalary set eid=#{eid},sid=#{sid}
+    </insert>
+</mapper>

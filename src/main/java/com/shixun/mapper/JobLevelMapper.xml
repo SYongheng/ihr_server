@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shixun.mapper.JobLevelMapper">
+
+    <select id="getJobLevelByName" parameterType="string" resultType="com.shixun.bean.JobLevel">
+        select * from joblevel WHERE name=#{name};
+    </select>
+
+    <insert id="addJobLevel" parameterType="com.shixun.bean.JobLevel">
+        INSERT INTO joblevel SET name=#{jobLevel.name},titleLevel=#{jobLevel.titleLevel}
+    </insert>
+
+    <select id="getAllJobLevels" resultType="com.shixun.bean.JobLevel">
+        select * from joblevel WHERE enabled=true;
+    </select>
+
+    <delete id="deleteJobLevelById">
+        DELETE FROM joblevel WHERE id IN
+        <foreach collection="ids" item="id" close=")" open="(" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <update id="updateJobLevel">
+        UPDATE joblevel
+        <set>
+            <if test="jobLevel.name!=null">
+                name=#{jobLevel.name},
+            </if>
+            <if test="jobLevel.titleLevel!=null">
+                titleLevel=#{jobLevel.titleLevel},
+            </if>
+        </set>
+        WHERE id=#{jobLevel.id}
+    </update>
+
+    <select id="getNameById" resultType="String">
+        select name from joblevel WHERE id = #{id} and enabled=true;
+    </select>
+
+    <select id="getTitleLevelById" resultType="String">
+        select titleLevel from joblevel WHERE id = #{id} and enabled=true;
+    </select>
+</mapper>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shixun.mapper.SqlFileMapper">
+
+    <insert id="addSqlFile" parameterType="com.shixun.bean.SqlFile">
+        insert into sqlfile(name,createDate,url) values (#{name},#{createDate},#{url})
+    </insert>
+
+    <select id="getSqlFileByCreateDate" resultType="Long">
+        select count(*) from sqlfile where 1=1
+        <if test="createDate!=null">
+            and createDate >= #{createDate} and createDate &lt; date_add(#{createDate}, interval + 1 month)
+        </if>
+    </select>
+
+    <select id="getSqlFileByPage" resultType="com.shixun.bean.SqlFile">
+        select * from sqlfile where 1=1
+        <if test="createDate!=null">
+            and createDate >= #{createDate} and createDate &lt; date_add(#{createDate}, interval + 1 month)
+        </if>
+        order by name desc
+        <if test="start!=null and size!=null">
+            limit #{start},#{size}
+        </if>
+    </select>
+
+    <select id="getSqlFileById" resultType="com.shixun.bean.SqlFile">
+        select id,name,url,createDate from sqlfile where id = #{id}
+    </select>
+
+    <delete id="deleteSqlFileByIds" parameterType="String">
+        delete from sqlfile where id in
+        <foreach collection="ids" separator="," open="(" close=")" item="id">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

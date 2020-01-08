@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shixun.mapper.RewardPunishmentMapper">
+
+    <select id="getCountByKeywords" resultType="Long">
+        select count(*) from employeerp r left join employee e on r.eid = e.id
+        where e.name like concat('%',#{keywords},'%') and e.departmentId != (select id from department where `name` = '离职')
+        <if test="rpType!=null">
+            and r.rpType = #{rpType}
+        </if>
+        <if test="startRPDate!=null and endRPDate!=null">
+            and r.rpDate between #{startRPDate} and #{endRPDate}
+        </if>
+    </select>
+
+    <select id="getRPByPage" resultType="com.shixun.bean.RewardPunishment">
+        select r.id, r.eid, e.workID, e.name as ename, r.rpDate, r.rpPoint, r.rpType, r.remark
+        from employeerp r left join employee e on r.eid = e.id
+        where e.name like concat('%',#{keywords},'%') and e.departmentId != (select id from department where `name` = '离职')
+        <if test="rpType!=null">
+            and r.rpType = #{rpType}
+        </if>
+        <if test="startRPDate!=null and endRPDate!=null">
+            and r.rpDate between #{startRPDate} and #{endRPDate}
+        </if>
+        <if test="start!=null and size!=null">
+            order by r.rpDate desc limit #{start},#{size}
+        </if>
+    </select>
+
+    <insert id="addRP" parameterType="com.shixun.bean.RewardPunishment">
+        insert into employeerp(eid,rpDate,rpPoint,rpType,remark)
+        values (#{eid}, #{rpDate}, #{rpPoint}, #{rpType}, #{remark})
+    </insert>
+
+    <update id="updateRP" parameterType="com.shixun.bean.RewardPunishment">
+        update employeerp
+        <set>
+            <if test="rpDate != null">
+                rpDate = #{rpDate},
+            </if>
+            <if test="rpPoint != null">
+                rpPoint = #{rpPoint},
+            </if>
+            <if test="rpType != null">
+                rpType = #{rpType},
+            </if>
+            <if test="remark != null">
+                remark = #{remark},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteRPByIds">
+        DELETE FROM employeerp WHERE id IN
+        <foreach collection="ids" separator="," open="(" close=")" item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getCountOfPRScoreByKeywords" resultType="Long">
+        select COUNT(DISTINCT r.eid, e.name) from employeerp r LEFT JOIN employee e on r.eid = e.id
+        where e.name like concat('%',#{keywords},'%') and e.departmentId != (select id from department where `name` = '离职')
+    </select>
+
+    <select id="getPRScoreByPage" resultType="com.shixun.bean.RPScore">
+        select r.eid, e.workID, e.name as ename, sum(if(r.rpType = 1 ,rpPoint, -1* rpPoint)) as rpScore
+        from employeerp r LEFT JOIN employee e on r.eid = e.id and e.departmentId != (select id from department where `name` = '离职') GROUP BY eid
+        having e.name like concat('%',#{keywords},'%') ORDER BY rpScore
+        <if test="order!=null and order==0">
+            desc
+        </if>
+        <if test="start!=null and size!=null">
+            limit #{start},#{size}
+        </if>
+    </select>
+
+    <select id="getDetailsByEid" resultType="java.util.Map">
+        select rpDate, sum(if(rpType = 1 ,rpPoint, -1* rpPoint)) as rpScore
+        from employeerp where eid = #{eid} GROUP BY eid, rpDate
+    </select>
+
+    <select id="getPRScoreByEidAndDate" resultType="com.shixun.bean.RPScore">
+        select r.eid,e.workID, e.name as ename, r.rpDate, r.rpScore from
+        (select r.eid,  r.rpDate, sum(if(r.rpType = 1 ,rpPoint, -1* rpPoint)) as rpScore
+        from employeerp r where r.rpDate >= #{date} and r.rpDate &lt; date_add(#{date}, interval + 1 month) GROUP BY eid ) as r LEFT JOIN  employee e on r.eid = e.id and
+        e.departmentId != (select id from department where `name` = '离职')
+        where eid = #{eid}
+    </select>
+
+
+</mapper>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shixun.mapper.SalarySumMapper">
+    <insert id="addSalarySum" parameterType="com.shixun.bean.SalarySum">
+        insert into salarysum(eid, basicSalary, titleLevelCommission, rpCommission, allSalary, createDate, status)
+        values(#{eid}, #{basicSalary}, #{titleLevelCommission},
+        #{rpCommission}, #{allSalary}, #{createDate}, #{status})
+    </insert>
+
+    <update id="updateSalarySum">
+        update salarysum
+        <set>
+            <if test="salarySum.basicSalary != null">
+                basicSalary = #{salarySum.basicSalary},
+            </if>
+            <if test="salarySum.titleLevelCommission != null">
+                titleLevelCommission = #{salarySum.titleLevelCommission},
+            </if>
+            <if test="salarySum.rpCommission != null">
+                rpCommission = #{salarySum.rpCommission},
+            </if>
+            <if test="salarySum.allSalary != null">
+                allSalary = #{salarySum.allSalary},
+            </if>
+            <if test="salarySum.createDate != null">
+                createDate = #{salarySum.createDate},
+            </if>
+            <if test="salarySum.status != null">
+                status = #{salarySum.status},
+            </if>
+        </set>
+    </update>
+
+    <update id="handOutSalarySumByIds">
+        UPDATE salarysum set status = "1" WHERE id IN
+        <foreach collection="ids" separator="," open="(" close=")" item="id">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="getSalarySumByPage" resultType="com.shixun.bean.SalarySum">
+        SELECT s.id, s.eid, e.workID, e.name as ename, s.basicSalary, s.titleLevelCommission,
+        s.rpCommission, s.allSalary, s.createDate, s.status from salarysum s LEFT JOIN employee e
+        ON e.id = s.eid where e.name like concat('%',#{keywords},'%')
+        and e.departmentId != (select id from department where name = '离职')
+        <if test="date != null">
+            and createDate >= #{date} and createDate &lt; date_add(#{date}, interval + 1 month)
+        </if>
+        <if test="departmentId != null">
+            and e.departmentId = #{departmentId}
+        </if>
+        <if test="status != null">
+            and s.status = #{status}
+        </if>
+        <if test="start!=null and size!=null">
+            limit #{start}, #{size}
+        </if>
+    </select>
+
+    <select id="getCountByCondition" resultType="Long">
+        SELECT count(*) from salarysum s LEFT JOIN employee e
+        ON e.id = s.eid where e.name like concat('%',#{keywords},'%')
+        and e.departmentId != (select id from department where name = '离职')
+        <if test="date != null">
+            and createDate >= #{date} and createDate &lt; date_add(#{date}, interval + 1 month)
+        </if>
+        <if test="departmentId != null">
+            and e.departmentId = #{departmentId}
+        </if>
+        <if test="status != null">
+            and s.status = #{status}
+        </if>
+    </select>
+
+    <select id="getPreviewSalarySum" resultType="java.util.Map">
+        SELECT MIN(allSalary) as min,MAX(allSalary) as max,AVG(allSalary) as average, createDate, e.departmentId
+        from salarysum s LEFT JOIN employee e ON e.id = s.eid GROUP BY createDate, e.departmentId
+        having e.departmentId != (select id from department where name = '离职')
+        <if test="departmentId != null">
+            and e.departmentId = #{departmentId}
+        </if>
+    </select>
+
+    <select id="getCountOfEmpSalarySumByKeywords" resultType="Long">
+        select COUNT(DISTINCT s.eid, e.name) from salarysum s LEFT JOIN employee e on s.eid = e.id
+        where e.name like concat('%',#{keywords},'%') and e.departmentId != (select id from department where `name` = '离职')
+    </select>
+
+    <select id="getEmpSalarySumByPage" resultType="com.shixun.bean.SalarySum">
+        select s.eid, e.workID, e.name as ename, avg(s.allSalary) as allSalary from salarysum s LEFT JOIN employee e
+        on s.eid = e.id and e.departmentId != (select id from department where `name` = '离职') GROUP BY eid
+        having e.name like concat('%',#{keywords},'%') ORDER BY allSalary
+        <if test="order!=null and order==0">
+            desc
+        </if>
+        <if test="start!=null and size!=null">
+            limit #{start},#{size}
+        </if>
+    </select>
+
+    <select id="getDetailsByEid" resultType="java.util.Map">
+        select createDate,allSalary from salarysum where eid = #{eid}
+    </select>
+</mapper>
